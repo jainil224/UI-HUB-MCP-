@@ -11,13 +11,14 @@ export interface McpAppConfig {
   tools: Record<string, boolean>;
 }
 
-const CACHE_TTL_MS = 30_000;
+const CACHE_TTL_MS = 300_000;
 const CONFIG_COLLECTION = 'mcp_config';
 const CONFIG_DOC = 'app';
 
 class ConfigService {
   private cache: McpAppConfig | null = null;
   private cachedAt = 0;
+  private lastErrorLoggedAt = 0;
 
   async get(): Promise<McpAppConfig> {
     if (this.cache && Date.now() - this.cachedAt < CACHE_TTL_MS) {
@@ -35,7 +36,7 @@ class ConfigService {
 
     try {
       const db = firebaseService.getDb();
-      if (!db) return merged;
+      if (!db) return this.cache || merged;
       const doc = await db.collection(CONFIG_COLLECTION).doc(CONFIG_DOC).get();
       if (doc.exists) {
         const data = doc.data() || {};
@@ -48,7 +49,19 @@ class ConfigService {
       }
     } catch (error: any) {
       if (!String(error?.message || '').includes('Could not load the default credentials')) {
-        console.error('[ConfigService] Error reading config:', error);
+        // Keep serving last-known-good config and log at most once per TTL window,
+        // so a Firestore quota outage doesn't spam stack traces per request.
+        if (!this.cache || Date.now() - this.lastErrorLoggedAt >= CACHE_TTL_MS) {
+          this.lastErrorLoggedAt = Date.now();
+          console.error(
+            `[ConfigService] Error reading config (reusing previous config for ${Math.round(CACHE_TTL_MS / 1000)}s):`,
+            error
+          );
+        }
+      }
+      if (this.cache) {
+        this.cachedAt = Date.now();
+        return this.cache;
       }
     }
 

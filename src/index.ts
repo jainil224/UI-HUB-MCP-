@@ -38,6 +38,11 @@ app.use(express.urlencoded({ extended: false }));
 
 // Request logging (without secrets)
 app.use(async (req, res, next) => {
+  // Liveness probes (GET /health, GET /, and HEAD) must never touch Firestore —
+  // keep-alive cron + uptime monitors + frontend warm-up pings stay read-free.
+  if (req.method === 'HEAD' || req.path === '/health' || req.path === '/') {
+    return next();
+  }
   try {
     const cfg = await configService.get();
     if (cfg.loggingEnabled) {
