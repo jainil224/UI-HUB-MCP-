@@ -24,7 +24,7 @@ app.use(
       const allowed = config.allowedOrigins.some((o) => origin === o || origin.includes('localhost'));
       if (allowed) return callback(null, true);
 
-      callback(null, true);
+      callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
