@@ -1,17 +1,19 @@
 # Render blueprint for UI HUB MCP Server
-# Deploy this repository independently on Render.
 services:
   - name: ui-hub-mcp
     type: web
     runtime: node
     plan: starter
     region: oregon
+    rootDir: mcp-server
     buildCommand: npm install && npm run build
     startCommand: node dist/index.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: MCP_PORT
+        value: 3001
       - key: MCP_SERVER_URL
         value: https://api.ui-hub-design.com
       - key: MCP_API_KEY_PREFIX

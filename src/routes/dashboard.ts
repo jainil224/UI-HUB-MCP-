@@ -1,8 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { apiKeyService } from '../services/apiKeyService.js';
 import { firebaseService } from '../services/firebase.js';
-import admin from 'firebase-admin';
+import { analyticsService } from '../services/analyticsService.js';
+import { verifyFirebaseToken } from '../middleware/dashboardAuth.js';
 import config from '../config/env.js';
+import { configService } from '../config/configService.js';
 
 /**
  * Dashboard routes for MCP.
@@ -12,38 +14,16 @@ import config from '../config/env.js';
 
 export const dashboardRouter = Router();
 
-// Middleware: verify Firebase ID token from the website
-async function verifyFirebaseToken(req: Request, res: Response, next: () => void) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Missing auth token' });
+const requireAdminMetrics = async (req: Request, res: Response): Promise<boolean> => {
+  const { uid, email } = req as any;
+  const tier = await firebaseService.getUserTier(uid, email);
+  if (tier !== 'ADMIN' && tier !== 'ELITE') {
+    res.status(403).json({ error: 'FORBIDDEN', message: 'Admin access required' });
+    return false;
   }
-
-  const token = authHeader.slice(7).trim();
-
-  try {
-    const app = firebaseService.getAdmin();
-    // If no real credentials, allow dev-mode decode
-    let decoded: any;
-    if (config.firebase.clientEmail && config.firebase.privateKey) {
-      decoded = await app.auth().verifyIdToken(token);
-    } else {
-      // Dev fallback: decode payload without verification
-      const parts = token.split('.');
-      if (parts.length === 3) {
-        decoded = JSON.parse(Buffer.from(parts[1], 'base64').toString());
-      } else {
-        return res.status(401).json({ error: 'INVALID_TOKEN', message: 'Invalid token format' });
-      }
-    }
-
-    (req as any).uid = decoded.uid;
-    (req as any).email = decoded.email || (decoded.user_id?.includes('@') ? decoded.user_id : null);
-    next();
-  } catch (error: any) {
-    return res.status(401).json({ error: 'INVALID_TOKEN', message: 'Authentication failed' });
-  }
-}
+  (req as any).tier = tier;
+  return true;
+};
 
 // GET /api/dashboard/mcp/keys — list user's API keys
 dashboardRouter.get('/keys', verifyFirebaseToken, async (req: Request, res: Response) => {
@@ -120,6 +100,7 @@ dashboardRouter.get('/status', verifyFirebaseToken, async (req: Request, res: Re
   const tier = await firebaseService.getUserTier(uid, email);
   const keys = await apiKeyService.listApiKeys(uid);
   const activeKeys = keys.filter((k) => k.status === 'active');
+  const cfg = await configService.get();
 
   res.json({
     endpoint: `${config.mcpServerUrl}/mcp`,
@@ -130,19 +111,31 @@ dashboardRouter.get('/status', verifyFirebaseToken, async (req: Request, res: Re
       active: activeKeys.length,
     },
     rateLimit: {
-      free: config.rateLimitFree,
-      pro: config.rateLimitPro,
+      free: cfg.rateLimitFree,
+      pro: cfg.rateLimitPro,
     },
-    features: {
-      searchComponents: true,
-      getComponent: true,
-      getComponentCode: true,
-      searchTemplates: true,
-      getTemplate: true,
-      searchAnimations: true,
-      getAnimationCode: true,
-      listCategories: true,
-      getDependencies: true,
+    features: await configService.getToolStates(),
+  });
+});
+
+// GET /api/dashboard/mcp/admin/metrics — Platform-wide telemetry (Admin only)
+dashboardRouter.get('/admin/metrics', verifyFirebaseToken, async (req: Request, res: Response) => {
+  const allowed = await requireAdminMetrics(req, res);
+  if (!allowed) return;
+
+  const todayKey = new Date().toISOString().split('T')[0];
+  const summary = await analyticsService.getDailySummary(todayKey);
+
+  res.json({
+    date: todayKey,
+    ...summary,
+    server: {
+      status: 'healthy',
+      uptime: Math.round(process.uptime()),
+      memoryUsage: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + ' MB',
+      environment: config.nodeEnv,
+      version: '1.0.0',
     },
   });
 });
+
