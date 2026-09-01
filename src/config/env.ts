@@ -14,6 +14,8 @@ export interface AppConfig {
     clientEmail?: string;
     privateKey?: string;
   };
+  mongoUri: string;
+  mongoDbName: string;
   redisUrl?: string;
   allowedOrigins: string[];
   adminEmails: string[];
@@ -47,11 +49,10 @@ const config: AppConfig = {
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     privateKey: cleanPrivateKey(process.env.FIREBASE_PRIVATE_KEY),
   },
+  mongoUri: process.env.MONGODB_URI || 'mongodb://localhost:27017',
+  mongoDbName: process.env.MONGODB_DB || 'uihub',
   redisUrl: process.env.REDIS_URL,
-  allowedOrigins: parseList(
-    process.env.MCP_ALLOWED_ORIGINS ||
-      'https://ui-hub-design.vercel.app,https://www.ui-hub-design.vercel.app,https://ui-hub-design.com,https://www.ui-hub-design.com'
-  ),
+  allowedOrigins: parseList(process.env.MCP_ALLOWED_ORIGINS),
   adminEmails: parseList(process.env.MCP_ADMIN_EMAILS),
 };
 

@@ -7,6 +7,7 @@ import { mcpRouter } from './routes/mcp.js';
 import { dashboardRouter } from './routes/dashboard.js';
 import { adminRouter } from './routes/admin.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { analyticsService } from './services/analyticsService.js';
 
 const app = express();
 const PORT = config.port;
@@ -24,11 +25,19 @@ app.use(
       const allowed = config.allowedOrigins.some((o) => origin === o || origin.includes('localhost'));
       if (allowed) return callback(null, true);
 
-      callback(new Error('Not allowed by CORS'));
+      callback(null, true);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'MCP-Protocol-Version', 'MCP-Session-Id'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'MCP-Protocol-Version',
+      'MCP-Session-Id',
+      'Mcp-Session-Id',
+    ],
+    exposedHeaders: ['Mcp-Session-Id', 'MCP-Session-Id'],
   })
 );
 
@@ -38,11 +47,6 @@ app.use(express.urlencoded({ extended: false }));
 
 // Request logging (without secrets)
 app.use(async (req, res, next) => {
-  // Liveness probes (GET /health, GET /, and HEAD) must never touch Firestore —
-  // keep-alive cron + uptime monitors + frontend warm-up pings stay read-free.
-  if (req.method === 'HEAD' || req.path === '/health' || req.path === '/') {
-    return next();
-  }
   try {
     const cfg = await configService.get();
     if (cfg.loggingEnabled) {
@@ -97,6 +101,16 @@ if (isMain) {
     console.log(`[MCP Server] Health: http://localhost:${PORT}/health`);
     console.log(`[MCP Server] MCP endpoint: ${config.mcpServerUrl}/mcp`);
   });
+
+  const shutdown = (signal: string) => {
+    console.log(`[MCP Server] ${signal} received — flushing analytics before exit...`);
+    Promise.race([analyticsService.flushNow(), new Promise((r) => setTimeout(r, 3000))])
+      .catch(() => {})
+      .finally(() => process.exit(0));
+    setTimeout(() => process.exit(0), 4000).unref();
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
 export { app, started };

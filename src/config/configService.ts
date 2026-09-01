@@ -1,4 +1,4 @@
-import { firebaseService } from '../services/firebase.js';
+import { getCollection } from '../services/mongo.js';
 import config from './env.js';
 import { TOOL_NAMES } from '../tools/index.js';
 
@@ -11,14 +11,14 @@ export interface McpAppConfig {
   tools: Record<string, boolean>;
 }
 
-const CACHE_TTL_MS = 300_000;
+const CACHE_TTL_MS = 30_000;
+const CONFIG_DB_TIMEOUT_MS = 5_000;
 const CONFIG_COLLECTION = 'mcp_config';
 const CONFIG_DOC = 'app';
 
 class ConfigService {
   private cache: McpAppConfig | null = null;
   private cachedAt = 0;
-  private lastErrorLoggedAt = 0;
 
   async get(): Promise<McpAppConfig> {
     if (this.cache && Date.now() - this.cachedAt < CACHE_TTL_MS) {
@@ -35,11 +35,15 @@ class ConfigService {
     };
 
     try {
-      const db = firebaseService.getDb();
-      if (!db) return this.cache || merged;
-      const doc = await db.collection(CONFIG_COLLECTION).doc(CONFIG_DOC).get();
-      if (doc.exists) {
-        const data = doc.data() || {};
+      const collection = await Promise.race([
+        getCollection(CONFIG_COLLECTION),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Config DB timeout')), CONFIG_DB_TIMEOUT_MS)
+        ),
+      ]);
+      const doc = await collection.findOne({ _id: CONFIG_DOC });
+      if (doc) {
+        const data = doc;
         if (typeof data.rateLimitFree === 'number') merged.rateLimitFree = data.rateLimitFree;
         if (typeof data.rateLimitPro === 'number') merged.rateLimitPro = data.rateLimitPro;
         if (typeof data.authEnabled === 'boolean') merged.authEnabled = data.authEnabled;
@@ -48,21 +52,7 @@ class ConfigService {
         if (data.tools && typeof data.tools === 'object') merged.tools = { ...(data.tools as Record<string, boolean>) };
       }
     } catch (error: any) {
-      if (!String(error?.message || '').includes('Could not load the default credentials')) {
-        // Keep serving last-known-good config and log at most once per TTL window,
-        // so a Firestore quota outage doesn't spam stack traces per request.
-        if (!this.cache || Date.now() - this.lastErrorLoggedAt >= CACHE_TTL_MS) {
-          this.lastErrorLoggedAt = Date.now();
-          console.error(
-            `[ConfigService] Error reading config (reusing previous config for ${Math.round(CACHE_TTL_MS / 1000)}s):`,
-            error
-          );
-        }
-      }
-      if (this.cache) {
-        this.cachedAt = Date.now();
-        return this.cache;
-      }
+      console.error('[ConfigService] Error reading config (using defaults):', error?.message || error);
     }
 
     this.cache = merged;
@@ -87,17 +77,16 @@ class ConfigService {
 
   async update(partial: Partial<McpAppConfig>): Promise<McpAppConfig> {
     try {
-      const db = firebaseService.getDb();
+      const collection = await getCollection(CONFIG_COLLECTION);
       const current = await this.get();
       const next = { ...current, ...partial };
       if (partial.tools) {
         next.tools = { ...current.tools, ...partial.tools };
       }
-      await db
-        .collection(CONFIG_COLLECTION)
-        .doc(CONFIG_DOC)
-        .set(
-          {
+      await collection.updateOne(
+        { _id: CONFIG_DOC },
+        {
+          $set: {
             rateLimitFree: next.rateLimitFree,
             rateLimitPro: next.rateLimitPro,
             authEnabled: next.authEnabled,
@@ -106,14 +95,13 @@ class ConfigService {
             tools: next.tools,
             updatedAt: new Date().toISOString(),
           },
-          { merge: true }
-        );
+        },
+        { upsert: true }
+      );
       this.cache = null;
       return this.get();
     } catch (error: any) {
-      if (!String(error?.message || '').includes('Could not load the default credentials')) {
-        console.error('[ConfigService] Error saving config:', error);
-      }
+      console.error('[ConfigService] Error saving config:', error);
       this.cache = null;
       return this.get();
     }
