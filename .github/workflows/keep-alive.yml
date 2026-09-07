@@ -1,4 +1,4 @@
-name: MCP Keep-Alive
+﻿name: MCP Keep-Alive
 
 on:
   schedule:

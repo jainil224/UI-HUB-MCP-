@@ -1,4 +1,4 @@
-# Keeping the MCP Server Awake
+﻿# Keeping the MCP Server Awake
 
 The MCP server is deployed to Render (free tier). Free instances **spin down after ~15 minutes of idle time** and take several minutes to boot again on the next request. That is why `/dashboard/mcp` and `/admin/mcp/*` pages can appear to hang after a quiet period.
 
@@ -16,21 +16,21 @@ The ping target is `GET https://api.ui-hub-design.com/health`. It is deliberatel
 
 ## 1. GitHub Actions (already in this repo)
 
-`.github/workflows/keep-alive.yml` runs on a `*/5 * * * *` schedule and curls the health endpoint with a 30s timeout. Nothing to configure — it activates as soon as this repo is on GitHub.
+`.github/workflows/keep-alive.yml` runs on a `*/5 * * * *` schedule and curls the health endpoint with a 30s timeout. Nothing to configure ΓÇö it activates as soon as this repo is on GitHub.
 
 > Note: GitHub pauses scheduled workflows after 60 days with no repository activity. Any commit or PR wakes it back up.
 
 ## 2. cron-job.org (recommended external monitor)
 
-1. Create a free account at https://cron-job.org → **Create Cron Job**.
+1. Create a free account at https://cron-job.org ΓåÆ **Create Cron Job**.
 2. Set **URL** to `https://api.ui-hub-design.com/health`.
 3. Method: **GET**.
-4. **Interval**: 1–2 minutes (plenty below Render's 15-minute idle limit). Every minute gives near-zero wake latency.
+4. **Interval**: 1ΓÇô2 minutes (plenty below Render's 15-minute idle limit). Every minute gives near-zero wake latency.
 5. Attach your email for **Failure Notifications** (alerts when the ping fails or is slow).
 
 ### Alternative: UptimeRobot
 
-1. Free account at https://uptimerobot.com → **+ New Monitor**.
+1. Free account at https://uptimerobot.com ΓåÆ **+ New Monitor**.
 2. Monitor Type: **HTTP(S)**, URL `https://api.ui-hub-design.com/health`.
 3. Interval **5 minutes** (the free minimum), add your email for alerts.
 4. Use this as a secondary monitor alongside cron-job.org if you want redundancy.
@@ -54,4 +54,4 @@ After deployment, confirm the endpoint responds:
 curl -i https://api.ui-hub-design.com/health
 ```
 
-Expected: `200` with `{"status":"ok","service":"ui-hub-mcp"}`. Wait >15 minutes with no pings active, then load `/admin/mcp/overview` in the app — it should respond within a few seconds thanks to the keep-alive.
+Expected: `200` with `{"status":"ok","service":"ui-hub-mcp"}`. Wait >15 minutes with no pings active, then load `/admin/mcp/overview` in the app ΓÇö it should respond within a few seconds thanks to the keep-alive.

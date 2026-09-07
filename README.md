@@ -1,4 +1,4 @@
-# UI HUB MCP Server
+﻿# UI HUB MCP Server
 
 Independent Model Context Protocol (MCP) server for the [UI HUB](https://ui-hub-design.vercel.app) AI-accessible UI component platform.
 
@@ -32,13 +32,13 @@ npm run dev
 
 See [.env.example](./.env.example). Key variables:
 
-- `MCP_SERVER_URL` — public base URL of this service (e.g. `https://ui-hub-mcp.onrender.com`)
-- `MCP_API_KEY_PREFIX` — default `uh_live_`
-- `MCP_RATE_LIMIT_FREE` / `MCP_RATE_LIMIT_PRO` — daily request limits per plan
-- `FIREBASE_PROJECT_ID` / `FIREBASE_CLIENT_EMAIL` / `FIREBASE_PRIVATE_KEY` — Firebase Admin SDK credentials
-- `REDIS_URL` — (optional) Upstash Redis for distributed rate limiting
-- `MCP_ADMIN_EMAILS` — comma-separated admin email overrides
-- `MCP_ALLOWED_ORIGINS` — comma-separated CORS origins
+- `MCP_SERVER_URL` ΓÇö public base URL of this service (e.g. `https://ui-hub-mcp.onrender.com`)
+- `MCP_API_KEY_PREFIX` ΓÇö default `uh_live_`
+- `MCP_RATE_LIMIT_FREE` / `MCP_RATE_LIMIT_PRO` ΓÇö daily request limits per plan
+- `FIREBASE_PROJECT_ID` / `FIREBASE_CLIENT_EMAIL` / `FIREBASE_PRIVATE_KEY` ΓÇö Firebase Admin SDK credentials
+- `REDIS_URL` ΓÇö (optional) Upstash Redis for distributed rate limiting
+- `MCP_ADMIN_EMAILS` ΓÇö comma-separated admin email overrides
+- `MCP_ALLOWED_ORIGINS` ΓÇö comma-separated CORS origins
 
 Port: defaults to `PORT` (Render sets this automatically), falling back to `MCP_PORT` then `3001`.
 
