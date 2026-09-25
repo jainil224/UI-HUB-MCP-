@@ -192,7 +192,8 @@ const CATEGORY_MAP = {
     "vector-wordmark": "text",
     "ember-husk": "interactive-background",
     "particle-loader": "loader",
-    "neon-border": "effect"
+    "neon-border": "effect",
+    "quantum-lattice": "interactive-background"
 };
 // id -> common dependencies
 const DEPENDENCIES_MAP = {
@@ -329,6 +330,7 @@ const DEPENDENCIES_MAP = {
     'ember-husk': ["react", "three", "@react-three/fiber", "@react-three/drei"],
     'particle-loader': ["react"],
     'neon-border': ["react", "framer-motion"],
+    'quantum-lattice': ["react", "three", "@react-three/fiber", "@react-three/drei"],
 };
 function humanizeId(id) {
     return id
