@@ -196,7 +196,9 @@ const CATEGORY_MAP = {
     "particle-loader": "loader",
     "neon-border": "effect",
     "matrix-rain": "interactive-background",
-    "quantum-lattice": "interactive-background"
+    "quantum-lattice": "interactive-background",
+    "originkit-hero-24": "3d",
+    "visionary-orb-hero": "3d"
 };
 // id -> common dependencies
 const DEPENDENCIES_MAP = {
@@ -337,6 +339,8 @@ const DEPENDENCIES_MAP = {
     'neon-border': ["react", "framer-motion"],
     'matrix-rain': ["react", "three", "@react-three/fiber", "@react-three/drei"],
     'quantum-lattice': ["react", "three", "@react-three/fiber", "@react-three/drei"],
+    'originkit-hero-24': ["react", "three", "@react-three/fiber", "@react-three/drei"],
+    'visionary-orb-hero': ["react", "three", "@react-three/fiber", "@react-three/drei"],
 };
 function humanizeId(id) {
     return id
