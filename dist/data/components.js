@@ -206,7 +206,8 @@ const CATEGORY_MAP = {
     "prism-pyramid": "loader",
     "dots-to-solid-text": "scroll",
     "mostar-cinematic-scroll": "scroll",
-    "antigravity-animation": "scroll"
+    "antigravity-animation": "scroll",
+    "hexa-sphere": "interactive-background"
 };
 // id -> common dependencies
 const DEPENDENCIES_MAP = {
@@ -354,6 +355,7 @@ const DEPENDENCIES_MAP = {
     'dots-to-solid-text': ["react", "framer-motion"],
     'mostar-cinematic-scroll': ["react", "framer-motion"],
     'antigravity-animation': ["react", "framer-motion"],
+    'hexa-sphere': ["react", "three", "@react-three/fiber", "@react-three/drei"],
 };
 function humanizeId(id) {
     return id
