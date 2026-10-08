@@ -621,6 +621,31 @@ adminRouter.patch('/api-keys/:id', requireAdmin, async (req, res) => {
     });
     res.json({ ok: true, id, status: patch.status });
 });
+adminRouter.delete('/api-keys/:id', requireAdmin, async (req, res) => {
+    const id = req.params.id;
+    const col = await mongoCollection('mcp_api_keys');
+    const keyId = (() => {
+        try {
+            return new ObjectId(id);
+        }
+        catch {
+            return id;
+        }
+    })();
+    const doc = await col.findOne({ _id: keyId }).catch(() => null);
+    if (!doc) {
+        return res.status(404).json({ error: 'NOT_FOUND', message: 'API key not found' });
+    }
+    await col.deleteOne({ _id: keyId });
+    await recordAudit({
+        adminEmail: req.email,
+        action: 'api_key.delete_permanent',
+        targetType: 'api_key',
+        targetId: id,
+        meta: { keyPrefix: doc.key_prefix || '', owner: doc.user_id || '' },
+    });
+    res.json({ ok: true, id, deleted: true });
+});
 adminRouter.get('/tools', requireAdmin, async (req, res) => {
     const states = await configService.getToolStates();
     const events = await analyticsService.queryEvents(daysAgoKey(30));
@@ -902,6 +927,7 @@ adminRouter.get('/health', requireAdmin, async (req, res) => {
         dbConnected = false;
     }
     const cfg = await configService.get();
+    const toolDrift = await configService.getToolDrift();
     const collections = await (async () => {
         const names = ['mcp_analytics', 'mcp_api_keys', 'mcp_audit', 'mcp_config', 'users', 'activity_logs'];
         const out = [];
@@ -943,8 +969,10 @@ adminRouter.get('/health', requireAdmin, async (req, res) => {
             loggingEnabled: cfg.loggingEnabled,
             rateLimitFree: cfg.rateLimitFree,
             rateLimitPro: cfg.rateLimitPro,
-            toolsEnabled: Object.values(cfg.tools).filter(Boolean).length,
-            toolsTotal: Object.keys(cfg.tools).length,
+            // Reconciled against the code registry rather than raw config counts.
+            // Raw counts conflated "tools stored in Mongo" with "tools that exist",
+            // so a stale key and a missing entry were indistinguishable from healthy.
+            tools: toolDrift,
         },
     });
 });
@@ -989,6 +1017,7 @@ adminRouter.post('/alerts/:key/unresolve', requireAdmin, async (req, res) => {
 });
 adminRouter.get('/settings', requireAdmin, async (req, res) => {
     const cfg = await configService.get();
+    const drift = await configService.getToolDrift();
     res.json({
         rateLimitFree: cfg.rateLimitFree,
         rateLimitPro: cfg.rateLimitPro,
@@ -996,6 +1025,11 @@ adminRouter.get('/settings', requireAdmin, async (req, res) => {
         analyticsEnabled: cfg.analyticsEnabled,
         loggingEnabled: cfg.loggingEnabled,
         tools: cfg.tools,
+        // Effective on/off state for every registered tool, plus what the stored
+        // config is missing or referencing. Callers previously had to re-derive
+        // fail-open semantics themselves and had no way to see stale keys.
+        toolStates: await configService.getToolStates(),
+        toolDrift: drift,
         settingsDoc: 'mcp_config/app',
     });
 });
