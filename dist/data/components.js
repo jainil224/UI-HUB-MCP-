@@ -212,7 +212,8 @@ const CATEGORY_MAP = {
     "particle-sun": "particles-background",
     "streak-sphere": "particles-background",
     "feather-sphere": "interactive-background",
-    "wave-tunnel": "particles-background"
+    "wave-tunnel": "particles-background",
+    "spider-crawler": "cursor"
 };
 // id -> common dependencies
 const DEPENDENCIES_MAP = {
@@ -365,6 +366,7 @@ const DEPENDENCIES_MAP = {
     'streak-sphere': ["react", "three"],
     'feather-sphere': ["react", "three", "@react-three/fiber", "@react-three/drei"],
     'wave-tunnel': ["react", "three"],
+    'spider-crawler': ["react"],
 };
 function humanizeId(id) {
     return id
