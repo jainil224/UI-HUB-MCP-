@@ -216,7 +216,8 @@ const CATEGORY_MAP = {
     "light-beam-type": "text",
     "neon-rain": "particles-background",
     "violet-cascade": "particles-background",
-    "pulse-lattice": "particles-background"
+    "pulse-lattice": "particles-background",
+    "atelier-drift": "image-interaction"
 };
 // id -> common dependencies
 const DEPENDENCIES_MAP = {
@@ -372,6 +373,7 @@ const DEPENDENCIES_MAP = {
     'neon-rain': ["react", "three"],
     'violet-cascade': ["react", "three"],
     'pulse-lattice': ["react", "three"],
+    'atelier-drift': ["react", "framer-motion"],
 };
 function humanizeId(id) {
     return id
