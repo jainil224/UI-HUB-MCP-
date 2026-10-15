@@ -50,6 +50,7 @@ const PREMIUM_IDS = new Set([
     "spider-crawler",
     "moon-animation",
     "saturn-animation",
+    "mercury-animation",
     "black-hole-3d",
     "card-cascade",
     "generating-orb",
@@ -223,7 +224,8 @@ const CATEGORY_MAP = {
     "liquid-glass-orb": "interactive-background",
     "comet-trail": "particles-background",
     "moon-animation": "space",
-    "saturn-animation": "space"
+    "saturn-animation": "space",
+    "mercury-animation": "space"
 };
 // id -> common dependencies
 const DEPENDENCIES_MAP = {
@@ -384,6 +386,7 @@ const DEPENDENCIES_MAP = {
     'comet-trail': ["react", "three"],
     'moon-animation': ["react"],
     'saturn-animation': ["react"],
+    'mercury-animation': ["react"],
 };
 function humanizeId(id) {
     return id
