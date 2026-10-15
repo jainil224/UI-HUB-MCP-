@@ -48,6 +48,8 @@ const PREMIUM_IDS = new Set([
     "mostar-cinematic-scroll",
     "antigravity-animation",
     "spider-crawler",
+    "moon-animation",
+    "saturn-animation",
     "black-hole-3d",
     "card-cascade",
     "generating-orb",
@@ -219,7 +221,9 @@ const CATEGORY_MAP = {
     "pulse-lattice": "particles-background",
     "atelier-drift": "image-interaction",
     "liquid-glass-orb": "interactive-background",
-    "comet-trail": "particles-background"
+    "comet-trail": "particles-background",
+    "moon-animation": "space",
+    "saturn-animation": "space"
 };
 // id -> common dependencies
 const DEPENDENCIES_MAP = {
@@ -378,6 +382,8 @@ const DEPENDENCIES_MAP = {
     'atelier-drift': ["react", "framer-motion"],
     'liquid-glass-orb': ["react", "three", "@react-three/fiber", "@react-three/drei"],
     'comet-trail': ["react", "three"],
+    'moon-animation': ["react"],
+    'saturn-animation': ["react"],
 };
 function humanizeId(id) {
     return id
