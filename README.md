@@ -8,7 +8,7 @@ With the UI HUB MCP server connected, an AI assistant can **search**, **discover
 components — including their source code, dependencies, metadata, templates, animations, and AI generation prompts —
 and use them directly inside your projects. The same server also powers the official [UI HUB CLI](/docs/cli.md).
 
----
+------
 
 ## Table of Contents
 
