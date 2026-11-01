@@ -238,7 +238,8 @@ const CATEGORY_MAP = {
     "venus-animation": "space",
     "uranus-animation": "space",
     "mars-animation": "space",
-    "jupiter-animation": "space"
+    "jupiter-animation": "space",
+    "venom-button": "button"
 };
 // id -> common dependencies
 const DEPENDENCIES_MAP = {
@@ -407,6 +408,7 @@ const DEPENDENCIES_MAP = {
     'uranus-animation': ["react"],
     'mars-animation': ["react"],
     'jupiter-animation': ["react"],
+    'venom-button': ["react"],
 };
 function humanizeId(id) {
     return id
