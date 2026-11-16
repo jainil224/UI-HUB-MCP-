@@ -17,7 +17,8 @@ const CATEGORY_DESCRIPTIONS = {
     "navbar": "Navigation bar layouts",
     "particles-background": "Particle background components",
     "scroll": "Scroll-triggered animations",
-    "text": "Text and typography animations"
+    "text": "Text and typography animations",
+    "text-scroll": "Scroll-driven text animations"
 };
 const PREMIUM_IDS = new Set([
     "black-hole-cursor",
@@ -240,7 +241,10 @@ const CATEGORY_MAP = {
     "mars-animation": "space",
     "jupiter-animation": "space",
     "venom-button": "button",
-    "spider-button": "button"
+    "spider-button": "button",
+    "earth": "space",
+    "svg-particle": "particles-background",
+    "scroll-text-reveal": "text-scroll"
 };
 // id -> common dependencies
 const DEPENDENCIES_MAP = {
@@ -411,6 +415,9 @@ const DEPENDENCIES_MAP = {
     'jupiter-animation': ["react"],
     'venom-button': ["react"],
     'spider-button': ["react"],
+    'earth': ["react"],
+    'svg-particle': ["react", "three"],
+    'scroll-text-reveal': ["react", "framer-motion"],
 };
 function humanizeId(id) {
     return id
