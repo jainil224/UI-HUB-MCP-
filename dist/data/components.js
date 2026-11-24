@@ -247,7 +247,8 @@ const CATEGORY_MAP = {
     "scroll-text-reveal": "text-scroll",
     "scroll-text-wave": "text-scroll",
     "form-is-time": "text-scroll",
-    "kinetic-type": "text-scroll"
+    "kinetic-type": "text-scroll",
+    "text-funnel": "text-scroll"
 };
 // id -> common dependencies
 const DEPENDENCIES_MAP = {
@@ -424,6 +425,7 @@ const DEPENDENCIES_MAP = {
     'scroll-text-wave': ["react", "framer-motion"],
     'form-is-time': ["react", "framer-motion"],
     'kinetic-type': ["react", "framer-motion"],
+    'text-funnel': ["react", "framer-motion"],
 };
 function humanizeId(id) {
     return id
