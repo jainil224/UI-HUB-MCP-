@@ -249,7 +249,8 @@ const CATEGORY_MAP = {
     "form-is-time": "text-scroll",
     "kinetic-type": "text-scroll",
     "text-funnel": "text-scroll",
-    "trading-candle": "effect"
+    "trading-candle": "effect",
+    "acodibg": "effect"
 };
 // id -> common dependencies
 const DEPENDENCIES_MAP = {
@@ -428,6 +429,7 @@ const DEPENDENCIES_MAP = {
     'kinetic-type': ["react", "framer-motion"],
     'text-funnel': ["react", "framer-motion"],
     'trading-candle': ["react", "framer-motion"],
+    'acodibg': ["react", "framer-motion"],
 };
 function humanizeId(id) {
     return id
